@@ -717,11 +717,19 @@ class _MultinomialStepUpdate(HybridBlock):
         probs = mx.npx.softmax(outputs / self._temperature)
 
         if self._sampling_topp > 0:
-            probs = mx.np.where(
-                probs > self._sampling_topp,
-                probs,
+            sorted_indices = mx.np.argsort(probs, axis=2)
+            # argsort does not support descending at present
+            sorted_indices = mx.np.flip(sorted_indices, axis=2)
+            sorted_probs = mx.np.take_along_axis(probs, sorted_indices, axis=2)
+            cumsum_probs = mx.npx.cumsum(sorted_probs, axis=2)
+            masked_probs = mx.np.where(
+                cumsum_probs > self._sampling_topp,
+                sorted_probs,
                 mx.np.zeros_like(probs)
             )
+            # recover the sorted probs
+            reverse_indices = mx.np.argsort(sorted_indices, axis=2)
+            probs = mx.np.take_along_axis(masked_probs, reverse_indices, axis=2)
         elif self._sampling_topk > 0:
             topk_probs = mx.npx.topk(probs, axis=2, k=self._sampling_topk, ret_typ='value')
             # choose the k max prob
