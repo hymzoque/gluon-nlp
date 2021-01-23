@@ -721,6 +721,7 @@ class _MultinomialStepUpdate(HybridBlock):
             # argsort does not support descending at present
             sorted_indices = mx.np.flip(sorted_indices, axis=2)
             sorted_probs = mx.np.take_along_axis(probs, sorted_indices, axis=2)
+            print(sorted_probs)
             cumsum_probs = mx.np.cumsum(sorted_probs, axis=2)
             masked_probs = mx.np.where(
                 cumsum_probs > self._sampling_topp,
