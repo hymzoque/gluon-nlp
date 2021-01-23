@@ -63,20 +63,26 @@ def calculate_repetition(sample_ids):
     """The repetition rate in generated samples.
     """
     max_n = 90
-    n_repeated_examples = 0
+    samples_len = 0
+    repetition_len = 0
     for sample_id in sample_ids:
         rev = list(reversed(sample_id))
-        last_n_repeats = [0 for _ in range(max_n)]
+        samples_len += len(rev)
+        last_n_repeats = [0] * max_n
         for n in range(1, max_n + 1):
             n_repeat = 1
             while len(rev[n*n_repeat:n*(n_repeat+1)]) == n and \
                   rev[n*n_repeat:n*(n_repeat+1)] == rev[:n]:
                 n_repeat += 1
             last_n_repeats[n-1] = n_repeat
-        max_repeated_n = max(range(max_n), key=lambda x: last_n_repeats[x])
-        if last_n_repeats[max_repeated_n] > 1 and (max_repeated_n+1 >= 3 or last_n_repeats[max_repeated_n] > 50):
-            n_repeated_examples += 1
-    return n_repeated_examples / len(sample_ids)
+        for i in range(max_n):
+            last_n_repeat = last_n_repeats[i]
+            if last_n_repeat > 1 and (i+1 >= 3 or last_n_repeat > 50):
+                repetition_len += ((i+1) * last_n_repeat)
+#        max_repeated_n = max(range(max_n), key=lambda x: last_n_repeats[x])
+#        if last_n_repeats[max_repeated_n] > 1 and (max_repeated_n+1 >= 3 or last_n_repeats[max_repeated_n] > 50):
+#            pass
+    return repetition_len / samples_len
 
 
 def calculate_metrics(args):
@@ -95,7 +101,7 @@ def calculate_metrics(args):
         sample_ids.pop()
     sample_strs = tokenizer.encode(samples, output_type=str)
 
-    self_bleu4 = calculate_self_bleu4(sample_strs, args.num_bleu_samples)
+    self_bleu4 = 0#calculate_self_bleu4(sample_strs, args.num_bleu_samples)
     zipf_coefficient = calculate_zipf_coefficient(sample_ids, tokenizer)
     repetition = calculate_repetition(sample_ids)
     print('Self BLEU 4: {}\n'
