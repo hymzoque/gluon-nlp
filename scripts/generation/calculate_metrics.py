@@ -59,15 +59,13 @@ def calculate_zipf_coefficient(sample_ids, tokenizer):
     return r ** 2
 
 
-def calculate_repetition(sample_ids):
+def calculate_repetition(samples):
     """The repetition rate in generated samples.
     """
     max_n = 90
-    samples_len = 0
-    repetition_len = 0
-    for sample_id in sample_ids:
-        rev = list(reversed(sample_id))
-        samples_len += len(rev)
+    repetition = 0
+    for sample in samples:
+        rev = list(reversed(sample))
         last_n_repeats = [0] * max_n
         for n in range(1, max_n + 1):
             n_repeat = 1
@@ -75,14 +73,13 @@ def calculate_repetition(sample_ids):
                   rev[n*n_repeat:n*(n_repeat+1)] == rev[:n]:
                 n_repeat += 1
             last_n_repeats[n-1] = n_repeat
-        for i in range(max_n):
-            last_n_repeat = last_n_repeats[i]
-            if last_n_repeat > 1 and (i+1 >= 3 or last_n_repeat > 50):
-                repetition_len += ((i+1) * last_n_repeat)
-#        max_repeated_n = max(range(max_n), key=lambda x: last_n_repeats[x])
-#        if last_n_repeats[max_repeated_n] > 1 and (max_repeated_n+1 >= 3 or last_n_repeats[max_repeated_n] > 50):
-#            pass
-    return repetition_len / samples_len
+        max_repeated_n = max(range(max_n), key=lambda x: last_n_repeats[x])
+        if last_n_repeats[max_repeated_n] > 1 and (max_repeated_n+1 >= 3 or last_n_repeats[max_repeated_n] > 50):
+#            repeated_phrase = list(reversed(rev[:max_repeated_n + 1]))
+#            repeated_times = last_n_repeats[max_repeated_n]
+#            repeated_phrase_length = max_repeated_n + 1
+            repetition += 1
+    return repetition / len(samples)
 
 
 def calculate_metrics(args):

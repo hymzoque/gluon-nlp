@@ -12,9 +12,11 @@ Use the following command to generate gpt2 unconditional samples
 python3 generate_unconditional_gpt2_samples.py \
     --model_name gpt2_774M \
     --gpu 0 \
+    --length 200 \
     --temperature 0.7 \
     --top_k 40 \
-    --nsamples 1000 > samples
+    --batch_size 2 \
+    --nsamples 5000 > samples
 ```
 
 
